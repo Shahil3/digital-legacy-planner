@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: digital-legacy-planner
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SWITCH_CHECK_INTERVAL_DAYS
+        value: 90
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
