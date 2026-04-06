@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Legacy Estate Planner</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --navy: #0f1b33;
+      --saffron: #FF9933;
+      --green: #138808;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, var(--navy), #1e3a6e);
+      color: white;
+      padding: 16px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #FF9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #138808 66.6%);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo span {
+      color: #ffb84d;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--saffron);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #e68a00;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* ── AUTH PAGE ── */
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .auth-container {
+      background: white;
+      border-radius: 20px;
+      padding: 48px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .auth-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .auth-header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--saffron);
+      box-shadow: 0 0 0 3px rgba(255,153,51,0.1);
+    }
+
+    .auth-toggle {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .auth-toggle a {
+      color: var(--saffron);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .auth-toggle a:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      color: #14532d;
+      border: 1px solid #86efac;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #7f1d1d;
+      border: 1px solid #fca5a5;
+    }
+
+    /* ── DASHBOARD ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    /* ── UPLOAD FORM ── */
+    .upload-form {
+      display: grid;
+      gap: 24px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 16px;
+    }
+
+    .radio-option {
+      flex: 1;
+      position: relative;
+    }
+
+    .radio-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .radio-option label {
+      display: block;
+      padding: 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+
+    .radio-option input[type="radio"]:checked + label {
+      border-color: var(--saffron);
+      background: rgba(255,153,51,0.05);
+      color: var(--saffron);
+    }
+
+    .radio-option label:hover {
+      border-color: var(--saffron);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--saffron);
+      box-shadow: 0 0 0 3px rgba(255,153,51,0.1);
+    }
+
+    .nominee-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nominee-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 10px;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--red);
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      transform: scale(1.1);
+    }
+
+    /* ── ARTIFACTS LIST ── */
+    .artifacts-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .artifact-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .artifact-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .artifact-info {
+      flex: 1;
+    }
+
+    .artifact-type {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .artifact-type.pdf {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .artifact-type.link {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .artifact-type.password {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .artifact-description {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .artifact-meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    /* ── MODAL ── */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      line-height: 1;
+    }
+
+    .btn-close:hover {
+      color: var(--text);
+    }
+
+    /* ── SWITCH STATUS ── */
+    .switch-status {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 24px;
+      color: white;
+      margin-bottom: 32px;
+    }
+
+    .switch-status h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .switch-timer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .switch-days {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .switch-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 100px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 100px;
+      transition: width 0.3s;
+    }
+
+    /* ── LOADING ── */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .artifact-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .nominee-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     AUTH PAGE (LOGIN/REGISTER)
+════════════════════════════════════════════════════════ -->
+<div id="authPage" class="auth-page">
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>🔐 Digital Legacy</h1>
+      <p>Secure your digital estate for future generations</p>
+    </div>
+
+    <div id="authAlert"></div>
+
+    <!-- Login Form -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <span id="loginBtnText">Sign In</span>
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="registerForm" class="hidden">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="registerName" required placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="registerEmail" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="registerPassword" required placeholder="••••••••" minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <span id="registerBtnText">Create Account</span>
+      </button>
+    </form>
+
+    <div class="auth-toggle">
+      <span id="authToggleText">Don't have an account?</span>
+      <a id="authToggleLink">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DASHBOARD PAGE
+════════════════════════════════════════════════════════ -->
+<div id="dashboardPage" class="hidden">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">
+        <span>🔐</span> Digital <span>Legacy</span>
+      </div>
+      <div class="user-info">
+        <span id="userName"></span>
+        <button class="btn btn-secondary" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Dead Man's Switch Status -->
+    <div class="switch-status">
+      <h3>⏱️ Dead Man's Switch Status</h3>
+      <div class="switch-timer">
+        <div class="switch-days" id="switchDaysRemaining">--</div>
+        <div>
+          <div class="switch-label">Days Remaining</div>
+          <div style="font-size: 12px; opacity: 0.8;" id="switchNextCheckIn">Next check-in: --</div>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="switchProgress" style="width: 0%;"></div>
+      </div>
+      <button class="btn btn-primary" onclick="checkIn()">
+        <span id="checkInBtnText">✓ Check In Now</span>
+      </button>
+      <button class="btn btn-secondary" onclick="testTrigger()" style="margin-left: 10px;">
+        🧪 Test Trigger (Email Preview)
+      </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">📄</div>
+        <div class="stat-label">Total Artifacts</div>
+        <div class="stat-value" id="statTotalArtifacts">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #dbeafe; color: #2563eb;">📊</div>
+        <div class="stat-label">PDFs</div>
+        <div class="stat-value" id="statPdfs">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fef3c7; color: #d97706;">🔗</div>
+        <div class="stat-label">Links</div>
+        <div class="stat-value" id="statLinks">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">🔑</div>
+        <div class="stat-label">Passwords</div>
+        <div class="stat-value" id="statPasswords">0</div>
+      </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">📤 Upload New Artifact</h2>
+      </div>
+      <button class="btn btn-primary" onclick="openUploadModal()">+ Add New Artifact</button>
+    </div>
+
+    <!-- Artifacts List -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">📦 Your Artifacts</h2>
+      </div>
+      <div id="artifactsList" class="artifacts-list">
+        <!-- Artifacts will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     UPLOAD MODAL
+════════════════════════════════════════════════════════ -->
+<div id="uploadModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">📤 Upload New Artifact</h2>
+      <button class="btn-close" onclick="closeUploadModal()">×</button>
+    </div>
+
+    <div id="uploadAlert"></div>
+
+    <form id="uploadForm" class="upload-form">
+      <!-- Artifact Type Selection -->
+      <div class="form-group">
+        <label>Artifact Type</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="typePdf" name="artifactType" value="pdf" checked>
+            <label for="typePdf">📄 PDF</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="typeLink" name="artifactType" value="link">
+            <label for="typeLink">🔗 Link</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="typePassword" name="artifactType" value="password">
+            <label for="typePassword">🔑 Password</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Input (changes based on type) -->
+      <div class="form-group" id="dataInputGroup">
+        <label id="dataInputLabel">Upload PDF</label>
+        <input type="file" id="pdfInput" accept=".pdf" class="form-control">
+        <input type="url" id="linkInput" placeholder="https://example.com" class="hidden">
+        <input type="text" id="passwordInput" placeholder="Enter password/credential" class="hidden">
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label>Description (What recipients will see)</label>
+        <textarea id="descriptionInput" required placeholder="E.g., 'Family photos from 2010-2020' or 'Gmail account credentials'"></textarea>
+      </div>
+
+      <!-- Nominees -->
+      <div class="form-group">
+        <label>Nominees (Who will receive this artifact)</label>
+        <div id="nomineesList" class="nominee-list">
+          <!-- Nominees will be added here -->
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="addNominee()" style="margin-top: 12px;">+ Add Nominee</button>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <span id="uploadBtnText">🔒 Encrypt & Upload</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script src="crypto-utils.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
