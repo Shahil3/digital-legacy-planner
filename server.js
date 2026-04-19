@@ -245,16 +245,28 @@ app.delete('/api/artifacts/:id', authenticateToken, async (req, res) => {
 // DEAD MAN'S SWITCH ROUTES
 // ============================================
 
-// Check-in (reset the timer)
+// Check-in (reset the timer) - FIXED VERSION
 app.post('/api/switch/checkin', authenticateToken, async (req, res) => {
   try {
-    const status = switchStatus.get(req.user.id);
+    const userId = req.user.id;
+    let status = switchStatus.get(userId);
     
-    if (status) {
+    // FIX: If for some reason the switch status doesn't exist for this user, create it now
+    if (!status) {
+      console.log(`Initializing missing switch status for user: ${userId}`);
+      status = {
+        lastCheckIn: new Date().toISOString(),
+        isActive: true,
+        switchIntervalDays: parseInt(process.env.SWITCH_CHECK_INTERVAL_DAYS) || 90
+      };
+    } else {
+      // Normal update
       status.lastCheckIn = new Date().toISOString();
       status.isActive = true;
-      switchStatus.set(req.user.id, status);
     }
+
+    // Save back to the Map
+    switchStatus.set(userId, status);
 
     res.json({
       message: 'Check-in successful',
@@ -267,13 +279,20 @@ app.post('/api/switch/checkin', authenticateToken, async (req, res) => {
   }
 });
 
-// Get switch status
+// Get switch status - ALSO UPDATED TO PREVENT ERRORS
 app.get('/api/switch/status', authenticateToken, async (req, res) => {
   try {
-    const status = switchStatus.get(req.user.id);
+    const userId = req.user.id;
+    let status = switchStatus.get(userId);
     
+    // FIX: Ensure we don't crash if the status is missing
     if (!status) {
-      return res.status(404).json({ error: 'Switch status not found' });
+      status = {
+        lastCheckIn: new Date().toISOString(),
+        isActive: true,
+        switchIntervalDays: parseInt(process.env.SWITCH_CHECK_INTERVAL_DAYS) || 90
+      };
+      switchStatus.set(userId, status);
     }
 
     const lastCheckInDate = new Date(status.lastCheckIn);
@@ -507,6 +526,231 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
+
+// Add this to your existing server.js file
+// Insert these routes AFTER your existing dashboard stats route
+
+// ============================================
+// AI ROUTES (ADD THESE)
+// ============================================
+
+// AI: Get recommendations for user
+app.get('/api/ai/recommendations', authenticateToken, async (req, res) => {
+  try {
+    // Get user's artifacts
+    const userArtifacts = [];
+    
+    for (const [id, artifact] of artifacts.entries()) {
+      if (artifact.userId === req.user.id) {
+        const artifactNominees = nominees.get(id) || [];
+        userArtifacts.push({
+          id: artifact.id,
+          type: artifact.type,
+          description: artifact.description,
+          createdAt: artifact.createdAt,
+          nomineeCount: artifactNominees.length
+        });
+      }
+    }
+
+    // Simple AI analysis
+    const recommendations = generateRecommendations(userArtifacts);
+    const gaps = identifyGaps(userArtifacts);
+    const riskScore = calculateRiskScore(userArtifacts);
+
+    res.json({
+      recommendations,
+      gaps,
+      riskScore,
+      totalArtifacts: userArtifacts.length,
+      message: riskScore > 60 ? 'High risk - action needed' : riskScore > 30 ? 'Medium risk' : 'Good coverage'
+    });
+  } catch (error) {
+    console.error('AI recommendations error:', error);
+    res.status(500).json({ error: 'Failed to generate recommendations' });
+  }
+});
+
+// AI: Auto-categorize artifact (helper endpoint)
+app.post('/api/ai/categorize', authenticateToken, async (req, res) => {
+  try {
+    const { description } = req.body;
+    
+    if (!description) {
+      return res.status(400).json({ error: 'Description required' });
+    }
+
+    const category = categorizeText(description);
+    
+    res.json({
+      category: category.category,
+      confidence: category.confidence,
+      suggestedTags: category.tags
+    });
+  } catch (error) {
+    console.error('Categorization error:', error);
+    res.status(500).json({ error: 'Categorization failed' });
+  }
+});
+
+// ============================================
+// AI HELPER FUNCTIONS (ADD THESE)
+// ============================================
+
+function categorizeText(description) {
+  const descLower = description.toLowerCase();
+  
+  const categories = {
+    banking: ['bank', 'account', 'demat', 'savings', 'hdfc', 'icici', 'sbi', 'axis'],
+    insurance: ['insurance', 'policy', 'lic', 'health', 'life', 'term'],
+    investments: ['mutual fund', 'stocks', 'shares', 'zerodha', 'groww', 'sip'],
+    crypto: ['bitcoin', 'crypto', 'wallet', 'wazirx', 'seed'],
+    digital: ['email', 'gmail', 'facebook', 'instagram', 'social'],
+    government: ['aadhaar', 'pan', 'passport', 'voter']
+  };
+
+  let bestCategory = 'other';
+  let maxScore = 0;
+
+  for (const [category, keywords] of Object.entries(categories)) {
+    let score = 0;
+    for (const keyword of keywords) {
+      if (descLower.includes(keyword)) score++;
+    }
+    if (score > maxScore) {
+      maxScore = score;
+      bestCategory = category;
+    }
+  }
+
+  const confidence = Math.min((maxScore / 3) * 100, 100);
+  const tags = [];
+  
+  if (descLower.includes('urgent')) tags.push('urgent');
+  if (descLower.includes('important')) tags.push('important');
+
+  return {
+    category: bestCategory,
+    confidence: Math.round(confidence),
+    tags
+  };
+}
+
+function identifyGaps(artifacts) {
+  const gaps = [];
+  const categories = new Set(artifacts.map(a => categorizeText(a.description).category));
+
+  if (!categories.has('banking')) {
+    gaps.push({
+      category: 'banking',
+      priority: 'CRITICAL',
+      message: 'No bank accounts documented'
+    });
+  }
+
+  if (!categories.has('insurance')) {
+    gaps.push({
+      category: 'insurance',
+      priority: 'HIGH',
+      message: 'No insurance policies recorded'
+    });
+  }
+
+  if (!categories.has('investments')) {
+    gaps.push({
+      category: 'investments',
+      priority: 'HIGH',
+      message: 'No investment accounts found'
+    });
+  }
+
+  const withoutNominees = artifacts.filter(a => a.nomineeCount === 0);
+  if (withoutNominees.length > 0) {
+    gaps.push({
+      category: 'nominees',
+      priority: 'CRITICAL',
+      message: `${withoutNominees.length} artifacts need nominees`
+    });
+  }
+
+  return gaps;
+}
+
+function generateRecommendations(artifacts) {
+  const recommendations = [];
+  const categories = new Set(artifacts.map(a => categorizeText(a.description).category));
+
+  if (!categories.has('banking')) {
+    recommendations.push({
+      priority: 'HIGH',
+      icon: '🏦',
+      title: 'Add Bank Account Details',
+      description: 'Document your bank accounts with account numbers',
+      estimatedTime: '5 min'
+    });
+  }
+
+  if (!categories.has('investments')) {
+    recommendations.push({
+      priority: 'HIGH',
+      icon: '📊',
+      title: 'Add Investment Accounts',
+      description: 'Add Demat accounts from Zerodha, Groww, etc.',
+      estimatedTime: '10 min'
+    });
+  }
+
+  if (!categories.has('insurance')) {
+    recommendations.push({
+      priority: 'MEDIUM',
+      icon: '🛡️',
+      title: 'Record Insurance Policies',
+      description: 'Add LIC and health insurance details',
+      estimatedTime: '7 min'
+    });
+  }
+
+  if (artifacts.length < 5) {
+    recommendations.push({
+      priority: 'MEDIUM',
+      icon: '✅',
+      title: 'Complete Your Estate',
+      description: 'Most people have 10-15 digital assets to document',
+      estimatedTime: '15 min'
+    });
+  }
+
+  const singleNominee = artifacts.filter(a => a.nomineeCount === 1);
+  if (singleNominee.length > 2) {
+    recommendations.push({
+      priority: 'MEDIUM',
+      icon: '👥',
+      title: 'Add Backup Nominees',
+      description: `${singleNominee.length} artifacts need backup nominees`,
+      estimatedTime: '5 min'
+    });
+  }
+
+  return recommendations;
+}
+
+function calculateRiskScore(artifacts) {
+  let risk = 100;
+
+  // Reduce risk based on number of artifacts
+  risk -= Math.min(artifacts.length * 5, 30);
+
+  // Check category coverage
+  const categories = new Set(artifacts.map(a => categorizeText(a.description).category));
+  risk -= categories.size * 8;
+
+  // Check nominee coverage
+  const withNominees = artifacts.filter(a => a.nomineeCount > 0).length;
+  risk -= (withNominees / artifacts.length) * 30;
+
+  return Math.max(0, Math.min(100, Math.round(risk)));
+}
+
 // ============================================
 // START SERVER
 // ============================================
@@ -535,3 +779,6 @@ app.listen(PORT, () => {
 ╚════════════════════════════════════════════════════════════╝
   `);
 });
+
+
+
