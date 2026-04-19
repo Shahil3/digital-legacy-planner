@@ -1,4 +1,3 @@
-
 /**
  * Digital Legacy Estate Planner - Main Application
  */
@@ -603,4 +602,171 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+
+// Add these functions to your existing app.js file
+// Place them AFTER your existing dashboard functions
+
+// ════════════════════════════════════════════════════════
+// AI FEATURES (ADD THESE)
+// ════════════════════════════════════════════════════════
+
+// Initialize AI
+const ai = new DigitalLegacyAI();
+
+// Load AI recommendations on dashboard
+async function loadAIRecommendations() {
+  try {
+    const response = await fetch(`${API_BASE}/api/ai/recommendations`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load AI recommendations');
+    }
+
+    const data = await response.json();
+    displayAIRecommendations(data);
+
+  } catch (error) {
+    console.error('Error loading AI recommendations:', error);
+  }
+}
+
+// Display AI recommendations
+function displayAIRecommendations(aiData) {
+  const container = document.getElementById('aiRecommendations');
+  
+  if (!container) return; // If element doesn't exist yet
+
+  if (aiData.recommendations.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 20px; color: #16a34a;">
+        <p style="font-size: 18px; font-weight: 600;">✅ Great job!</p>
+        <p style="font-size: 14px; margin-top: 8px;">Your digital estate is well-documented.</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = `
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; color: white; margin-bottom: 24px;">
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <span>🤖</span>
+        <span>AI Recommendations</span>
+        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 100px; font-size: 12px; margin-left: auto;">
+          Risk: ${aiData.riskScore !== undefined && aiData.riskScore !== null ? aiData.riskScore : 100}%
+        </span>
+      </h3>
+  `;
+
+  // Display top 3 recommendations
+  aiData.recommendations.slice(0, 3).forEach(rec => {
+    const priorityColor = rec.priority === 'HIGH' ? '#fbbf24' : rec.priority === 'MEDIUM' ? '#93c5fd' : '#86efac';
+    
+    html += `
+      <div style="background: rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <span style="font-size: 24px;">${rec.icon}</span>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-weight: 700; font-size: 15px;">${rec.title}</span>
+              <span style="background: ${priorityColor}; color: #000; padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 700;">
+                ${rec.priority}
+              </span>
+            </div>
+            <p style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">${rec.description}</p>
+            <p style="font-size: 11px; opacity: 0.7;">⏱ ${rec.estimatedTime}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+
+  // Display gaps if any
+  if (aiData.gaps && aiData.gaps.length > 0) {
+    html += `
+      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+        <h4 style="font-size: 15px; font-weight: 700; color: #dc2626; margin-bottom: 12px;">⚠️ Critical Gaps Detected</h4>
+    `;
+
+    aiData.gaps.forEach(gap => {
+      html += `
+        <div style="padding: 8px 0; border-bottom: 1px solid #fecaca; font-size: 14px; color: #7f1d1d;">
+          <strong>${gap.category}:</strong> ${gap.message}
+        </div>
+      `;
+    });
+
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// Auto-categorize when user types description
+let categorizationTimeout;
+function setupAICategorization() {
+  const descriptionInput = document.getElementById('descriptionInput');
+  const categoryDisplay = document.createElement('div');
+  categoryDisplay.id = 'aiCategoryDisplay';
+  categoryDisplay.style.cssText = 'margin-top: 8px; font-size: 13px; color: #64748b;';
+  
+  if (descriptionInput && !document.getElementById('aiCategoryDisplay')) {
+    descriptionInput.parentElement.appendChild(categoryDisplay);
+    
+    descriptionInput.addEventListener('input', (e) => {
+      clearTimeout(categorizationTimeout);
+      
+      if (e.target.value.length < 5) {
+        categoryDisplay.innerHTML = '';
+        return;
+      }
+
+      categorizationTimeout = setTimeout(async () => {
+        const result = ai.categorizeArtifact(e.target.value);
+        
+        if (result.confidence > 30) {
+          categoryDisplay.innerHTML = `
+            <span style="color: #4f8ef7;">🤖 AI detected: <strong>${result.category}</strong> (${result.confidence}% confident)</span>
+            ${result.suggestedTags.length > 0 ? ` · Tags: ${result.suggestedTags.join(', ')}` : ''}
+          `;
+        }
+      }, 500);
+    });
+  }
+}
+
+// Update the showDashboard function to include AI
+// REPLACE your existing showDashboard function with this:
+async function showDashboard() {
+  document.getElementById('authPage').classList.add('hidden');
+  document.getElementById('dashboardPage').classList.remove('hidden');
+  
+  // Set user name
+  document.getElementById('userName').textContent = currentUser.name;
+
+  // Load dashboard data (including AI)
+  await Promise.all([
+    loadDashboardStats(),
+    loadArtifacts(),
+    loadSwitchStatus(),
+    loadAIRecommendations()  // ADD THIS LINE
+  ]);
+}
+
+// Update openUploadModal to include AI categorization
+// ADD this line at the end of your existing openUploadModal function:
+function openUploadModal() {
+  document.getElementById('uploadModal').classList.remove('hidden');
+  nominees = [];
+  document.getElementById('nomineesList').innerHTML = '';
+  document.getElementById('uploadForm').reset();
+  document.getElementById('uploadAlert').innerHTML = '';
+  
+  addNominee();
+  setupAICategorization(); // ADD THIS LINE
 }
