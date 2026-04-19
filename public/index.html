@@ -596,9 +596,6 @@
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════
-     AUTH PAGE (LOGIN/REGISTER)
-════════════════════════════════════════════════════════ -->
 <div id="authPage" class="auth-page">
   <div class="auth-container">
     <div class="auth-header">
@@ -608,7 +605,6 @@
 
     <div id="authAlert"></div>
 
-    <!-- Login Form -->
     <form id="loginForm">
       <div class="form-group">
         <label>Email</label>
@@ -623,7 +619,6 @@
       </button>
     </form>
 
-    <!-- Register Form -->
     <form id="registerForm" class="hidden">
       <div class="form-group">
         <label>Full Name</label>
@@ -649,11 +644,7 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════
-     DASHBOARD PAGE
-════════════════════════════════════════════════════════ -->
 <div id="dashboardPage" class="hidden">
-  <!-- Header -->
   <div class="header">
     <div class="header-content">
       <div class="logo">
@@ -667,7 +658,6 @@
   </div>
 
   <div class="container">
-    <!-- Dead Man's Switch Status -->
     <div class="switch-status">
       <h3>⏱️ Dead Man's Switch Status</h3>
       <div class="switch-timer">
@@ -688,7 +678,9 @@
       </button>
     </div>
 
-    <!-- Stats Grid -->
+    <div id="aiRecommendations">
+      </div>
+
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">📄</div>
@@ -712,7 +704,6 @@
       </div>
     </div>
 
-    <!-- Upload Section -->
     <div class="section">
       <div class="section-header">
         <h2 class="section-title">📤 Upload New Artifact</h2>
@@ -720,21 +711,16 @@
       <button class="btn btn-primary" onclick="openUploadModal()">+ Add New Artifact</button>
     </div>
 
-    <!-- Artifacts List -->
     <div class="section">
       <div class="section-header">
         <h2 class="section-title">📦 Your Artifacts</h2>
       </div>
       <div id="artifactsList" class="artifacts-list">
-        <!-- Artifacts will be loaded here -->
-      </div>
+        </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════
-     UPLOAD MODAL
-════════════════════════════════════════════════════════ -->
 <div id="uploadModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
@@ -745,7 +731,6 @@
     <div id="uploadAlert"></div>
 
     <form id="uploadForm" class="upload-form">
-      <!-- Artifact Type Selection -->
       <div class="form-group">
         <label>Artifact Type</label>
         <div class="radio-group">
@@ -764,7 +749,6 @@
         </div>
       </div>
 
-      <!-- Data Input (changes based on type) -->
       <div class="form-group" id="dataInputGroup">
         <label id="dataInputLabel">Upload PDF</label>
         <input type="file" id="pdfInput" accept=".pdf" class="form-control">
@@ -772,18 +756,15 @@
         <input type="text" id="passwordInput" placeholder="Enter password/credential" class="hidden">
       </div>
 
-      <!-- Description -->
       <div class="form-group">
         <label>Description (What recipients will see)</label>
         <textarea id="descriptionInput" required placeholder="E.g., 'Family photos from 2010-2020' or 'Gmail account credentials'"></textarea>
       </div>
 
-      <!-- Nominees -->
       <div class="form-group">
         <label>Nominees (Who will receive this artifact)</label>
         <div id="nomineesList" class="nominee-list">
-          <!-- Nominees will be added here -->
-        </div>
+          </div>
         <button type="button" class="btn btn-secondary" onclick="addNominee()" style="margin-top: 12px;">+ Add Nominee</button>
       </div>
 
@@ -795,6 +776,7 @@
 </div>
 
 <script src="crypto-utils.js"></script>
+<script src="ai-service.js"></script>
 <script src="app.js"></script>
 
 </body>
